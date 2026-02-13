@@ -46,9 +46,18 @@ const CompanyRow = ({ company, onToggleContacted, onStatusChange, onPriorityChan
         )}
       </div>
 
-      <Badge variant="outline" className={`${priority.className} border-0 text-xs font-medium px-2 py-0.5 shrink-0`}>
-        {priority.label}
-      </Badge>
+      <Select value={company.priority} onValueChange={(v) => onPriorityChange(company.id, v as Company["priority"])}>
+        <SelectTrigger className="h-7 w-[80px] text-xs border-0 bg-transparent">
+          <Badge variant="outline" className={`${priority.className} border-0 text-xs font-medium px-2 py-0.5`}>
+            {priority.label}
+          </Badge>
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="high">High</SelectItem>
+          <SelectItem value="medium">Medium</SelectItem>
+          <SelectItem value="low">Low</SelectItem>
+        </SelectContent>
+      </Select>
 
       <Select value={company.status} onValueChange={(v) => onStatusChange(company.id, v as Company["status"])}>
         <SelectTrigger className="h-7 w-[130px] text-xs border-0 bg-transparent">
@@ -61,17 +70,6 @@ const CompanyRow = ({ company, onToggleContacted, onStatusChange, onPriorityChan
           <SelectItem value="contacted">Contacted</SelectItem>
           <SelectItem value="replied">Replied</SelectItem>
           <SelectItem value="meeting_scheduled">Meeting Scheduled</SelectItem>
-        </SelectContent>
-      </Select>
-
-      <Select value={company.priority} onValueChange={(v) => onPriorityChange(company.id, v as Company["priority"])}>
-        <SelectTrigger className="h-7 w-[80px] text-xs border-0 bg-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="high">High</SelectItem>
-          <SelectItem value="medium">Medium</SelectItem>
-          <SelectItem value="low">Low</SelectItem>
         </SelectContent>
       </Select>
     </div>
