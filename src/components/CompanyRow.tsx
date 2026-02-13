@@ -28,51 +28,107 @@ const CompanyRow = ({ company, onToggleContacted, onStatusChange, onPriorityChan
   const priority = priorityConfig[company.priority];
 
   return (
-    <div className={`group grid grid-cols-[auto_1fr_auto_auto_auto] items-center gap-4 px-4 py-3 border-b border-border transition-colors hover:bg-muted/50 ${company.contacted ? "opacity-60" : ""}`}>
-      <Checkbox
-        checked={company.contacted}
-        onCheckedChange={() => onToggleContacted(company.id)}
-        className="data-[state=checked]:bg-success data-[state=checked]:border-success"
-      />
+    <>
+      {/* Desktop Layout */}
+      <div className={`hidden sm:grid group grid-cols-[auto_1fr_auto_auto] items-center gap-2 md:gap-4 px-3 md:px-4 py-3 border-b border-border transition-colors hover:bg-muted/50 ${company.contacted ? "opacity-60" : ""}`}>
+        <Checkbox
+          checked={company.contacted}
+          onCheckedChange={() => onToggleContacted(company.id)}
+          className="data-[state=checked]:bg-success data-[state=checked]:border-success"
+        />
 
-      <div className="min-w-0">
-        <span className={`font-body text-sm font-medium truncate block ${company.contacted ? "line-through text-muted-foreground" : "text-foreground"}`}>
-          {company.name}
-        </span>
-        {company.lastContactDate && (
-          <span className="text-xs text-muted-foreground">
-            Last: {company.lastContactDate}
+        <div className="min-w-0">
+          <span className={`font-body text-xs md:text-sm font-medium truncate block ${company.contacted ? "line-through text-muted-foreground" : "text-foreground"}`}>
+            {company.name}
           </span>
-        )}
+          {company.lastContactDate && (
+            <span className="text-[10px] md:text-xs text-muted-foreground">
+              Last: {company.lastContactDate}
+            </span>
+          )}
+        </div>
+
+        <Select value={company.priority} onValueChange={(v) => onPriorityChange(company.id, v as Company["priority"])}>
+          <SelectTrigger className="h-7 w-[70px] md:w-[80px] text-xs border-0 bg-transparent">
+            <Badge variant="outline" className={`${priority.className} border-0 text-xs font-medium px-2 py-0.5`}>
+              {priority.label}
+            </Badge>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="high">High</SelectItem>
+            <SelectItem value="medium">Medium</SelectItem>
+            <SelectItem value="low">Low</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select value={company.status} onValueChange={(v) => onStatusChange(company.id, v as Company["status"])}>
+          <SelectTrigger className="h-7 w-[100px] md:w-[130px] text-xs border-0 bg-transparent">
+            <Badge variant="outline" className={`${status.className} border-0 text-xs font-medium px-2 py-0.5`}>
+              {status.label}
+            </Badge>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="not_contacted">Not Contacted</SelectItem>
+            <SelectItem value="contacted">Contacted</SelectItem>
+            <SelectItem value="replied">Replied</SelectItem>
+            <SelectItem value="meeting_scheduled">Meeting Scheduled</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
-      <Select value={company.priority} onValueChange={(v) => onPriorityChange(company.id, v as Company["priority"])}>
-        <SelectTrigger className="h-7 w-[80px] text-xs border-0 bg-transparent">
-          <Badge variant="outline" className={`${priority.className} border-0 text-xs font-medium px-2 py-0.5`}>
-            {priority.label}
-          </Badge>
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="high">High</SelectItem>
-          <SelectItem value="medium">Medium</SelectItem>
-          <SelectItem value="low">Low</SelectItem>
-        </SelectContent>
-      </Select>
+      {/* Mobile Layout */}
+      <div className={`sm:hidden group px-3 py-3 border-b border-border transition-colors ${company.contacted ? "opacity-60" : ""}`}>
+        <div className="flex items-start gap-3">
+          <Checkbox
+            checked={company.contacted}
+            onCheckedChange={() => onToggleContacted(company.id)}
+            className="data-[state=checked]:bg-success data-[state=checked]:border-success mt-0.5"
+          />
+          
+          <div className="flex-1 min-w-0 space-y-2">
+            <div>
+              <span className={`font-body text-sm font-medium block ${company.contacted ? "line-through text-muted-foreground" : "text-foreground"}`}>
+                {company.name}
+              </span>
+              {company.lastContactDate && (
+                <span className="text-[10px] text-muted-foreground">
+                  Last: {company.lastContactDate}
+                </span>
+              )}
+            </div>
 
-      <Select value={company.status} onValueChange={(v) => onStatusChange(company.id, v as Company["status"])}>
-        <SelectTrigger className="h-7 w-[130px] text-xs border-0 bg-transparent">
-          <Badge variant="outline" className={`${status.className} border-0 text-xs font-medium px-2 py-0.5`}>
-            {status.label}
-          </Badge>
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="not_contacted">Not Contacted</SelectItem>
-          <SelectItem value="contacted">Contacted</SelectItem>
-          <SelectItem value="replied">Replied</SelectItem>
-          <SelectItem value="meeting_scheduled">Meeting Scheduled</SelectItem>
-        </SelectContent>
-      </Select>
-    </div>
+            <div className="flex gap-2">
+              <Select value={company.priority} onValueChange={(v) => onPriorityChange(company.id, v as Company["priority"])}>
+                <SelectTrigger className="h-7 w-auto text-xs border-0 bg-transparent p-0">
+                  <Badge variant="outline" className={`${priority.className} border-0 text-xs font-medium px-2 py-0.5`}>
+                    {priority.label}
+                  </Badge>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="high">High</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="low">Low</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={company.status} onValueChange={(v) => onStatusChange(company.id, v as Company["status"])}>
+                <SelectTrigger className="h-7 w-auto text-xs border-0 bg-transparent p-0">
+                  <Badge variant="outline" className={`${status.className} border-0 text-xs font-medium px-2 py-0.5`}>
+                    {status.label}
+                  </Badge>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="not_contacted">Not Contacted</SelectItem>
+                  <SelectItem value="contacted">Contacted</SelectItem>
+                  <SelectItem value="replied">Replied</SelectItem>
+                  <SelectItem value="meeting_scheduled">Meeting Scheduled</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
   );
 };
 

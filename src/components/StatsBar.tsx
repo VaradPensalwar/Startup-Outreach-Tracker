@@ -22,17 +22,20 @@ const StatsBar = ({ companies }: StatsBarProps) => {
   const progress = total > 0 ? (contacted / total) * 100 : 0;
 
   return (
-    <div className="bg-card border border-border rounded-lg p-4 space-y-4">
-      <div className="flex items-center justify-between gap-6 flex-wrap">
+    <div className="bg-card border border-border rounded-lg p-3 md:p-4 space-y-3 md:space-y-4">
+      {/* Stats Grid */}
+      <div className="grid grid-cols-3 sm:flex sm:items-center sm:justify-between gap-3 sm:gap-6">
         {stats.map((stat) => (
-          <div key={stat.label} className="text-center min-w-[80px]">
-            <div className={`text-2xl font-display font-bold ${stat.color}`}>{stat.value}</div>
-            <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider">{stat.label}</div>
+          <div key={stat.label} className="text-center min-w-0">
+            <div className={`text-xl sm:text-2xl font-display font-bold ${stat.color} leading-none`}>{stat.value}</div>
+            <div className="text-[10px] sm:text-xs text-muted-foreground font-medium uppercase tracking-wider mt-1 truncate">{stat.label}</div>
           </div>
         ))}
       </div>
+      
+      {/* Progress Bar */}
       <div className="space-y-1">
-        <div className="flex justify-between text-xs text-muted-foreground">
+        <div className="flex justify-between text-[10px] sm:text-xs text-muted-foreground">
           <span>Outreach Progress</span>
           <span>{progress.toFixed(1)}%</span>
         </div>
