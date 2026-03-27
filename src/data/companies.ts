@@ -132,7 +132,7 @@ const companyNames = [
   "Poodle AI Labs","SuperKalam","Emergent Labs","AtomFlo","CereBree","SMART","Fambot AI","Tala Health","Flowby","Moneda",
   "ScaleUp","Flynapse AI","Ballast Networks","Layers AI","Juztina","Supercore","Influenzo Technologies","Lexi","Novyte Materials","stealth startup",
   "OpenxAI","FridayAI","ShadowCore AI","Anagram","Prime Vacations","Scriptcentral","ServiceHive","OdisAI","Quantum Realm Engineering","Renan",
-  "GridSync","Talus Network"
+  "GridSync","Talus Network", "KPMG"
 ];
 
 export const generateCompanies = (): Company[] => {
