@@ -95,7 +95,7 @@ const Index = () => {
               <h1 className="text-lg sm:text-xl md:text-2xl font-display font-bold text-foreground tracking-tight leading-none break-words">
                 STARTUP OUTREACH TRACKER
               </h1>
-              <p className="text-[10px] sm:text-xs text-muted-foreground mt-1 font-display">{COMPANY_COUNT} companies · Generated from PDF</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground mt-1 font-display">{COMPANY_COUNT} companies</p>
             </div>
             <FileText className="w-6 h-6 sm:w-8 sm:h-8 text-muted-foreground shrink-0 ml-2" />
           </div>
