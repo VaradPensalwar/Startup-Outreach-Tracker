@@ -5,6 +5,7 @@ AI Startup Tracker is designed to simplify startup outreach by providing a clean
 The application automatically saves all changes in the browser using Local Storage, allowing data to persist across sessions without requiring a backend.
 
 ---
+## 📸 Preview
 
 <video src="https://github.com/user-attachments/assets/facba3d1-23cb-427a-9b1d-be56d3d0c7d3" autoplay loop muted playsinline width="100%"></video>
 
