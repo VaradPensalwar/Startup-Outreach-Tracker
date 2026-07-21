@@ -13,7 +13,7 @@ The application automatically saves all changes in the browser using Local Stora
 
 ## ✨ Features
 
-- Track outreach status for AI startups
+- Track outreach status for startups
 - Mark companies as contacted
 - Update company status
   - Not Contacted
