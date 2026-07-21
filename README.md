@@ -1,6 +1,6 @@
 ## 🌐 Overview
 
-AI Startup Tracker is designed to simplify startup outreach by providing a clean interface to manage company records in one place. Users can mark companies as contacted, update outreach status, assign priorities, search companies, and monitor overall outreach progress.
+Startup Outreach Tracker is designed to simplify startup outreach by providing a clean interface to manage company records in one place. Users can mark companies as contacted, update outreach status, assign priorities, search companies, and monitor overall outreach progress.
 
 The application automatically saves all changes in the browser using Local Storage, allowing data to persist across sessions without requiring a backend.
 
