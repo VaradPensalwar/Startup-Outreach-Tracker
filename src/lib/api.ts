@@ -28,6 +28,10 @@ export const companyApi = {
     method: "POST",
     body: JSON.stringify({ companies }),
   }),
+  create: (name: string) => request<{ company: Company }>("/api/companies", {
+    method: "POST",
+    body: JSON.stringify({ name }),
+  }),
   update: (id: number, updates: Partial<Company>) => request<{ company: Company }>(`/api/companies/${id}`, {
     method: "PATCH",
     body: JSON.stringify(updates),

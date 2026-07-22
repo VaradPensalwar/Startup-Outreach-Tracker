@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
-import { generateCompanies, Company, COMPANY_COUNT } from "@/data/companies";
+import { generateCompanies, Company } from "@/data/companies";
 import { companyApi } from "@/lib/api";
 import { useAuth } from "@/components/AuthProvider";
 import CompanyRow from "@/components/CompanyRow";
@@ -7,7 +7,7 @@ import StatsBar from "@/components/StatsBar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, FileText, CheckSquare, Download, LogOut } from "lucide-react";
+import { Search, FileText, CheckSquare, Download, LogOut, Plus } from "lucide-react";
 import { toast } from "sonner";
 
 const Index = () => {
@@ -17,6 +17,8 @@ const Index = () => {
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterPriority, setFilterPriority] = useState<string>("all");
+  const [newCompanyName, setNewCompanyName] = useState("");
+  const [addingCompany, setAddingCompany] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -106,6 +108,24 @@ const Index = () => {
       toast.error(error instanceof Error ? error.message : "Could not save this change.");
     }
   }, [updateCompany]);
+
+  const addCompany = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const name = newCompanyName.trim();
+    if (!name) return;
+
+    setAddingCompany(true);
+    try {
+      const result = await companyApi.create(name);
+      setCompanies((current) => [...current, result.company].sort((a, b) => a.id - b.id));
+      setNewCompanyName("");
+      toast.success(`${result.company.name} added to your tracker.`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not add the company.");
+    } finally {
+      setAddingCompany(false);
+    }
+  };
 
   const ITEMS_PER_PAGE = 25;
 
@@ -213,7 +233,7 @@ const Index = () => {
               <h1 className="text-lg sm:text-xl md:text-2xl font-display font-bold text-foreground tracking-tight leading-none break-words">
                 STARTUP OUTREACH TRACKER
               </h1>
-              <p className="text-[10px] sm:text-xs text-muted-foreground mt-1 font-display">{COMPANY_COUNT} companies</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground mt-1 font-display">{companies.length} companies</p>
             </div>
             <FileText className="w-6 h-6 sm:w-8 sm:h-8 text-muted-foreground shrink-0 ml-2" />
           </div>
@@ -224,6 +244,19 @@ const Index = () => {
               <StatsBar companies={companies} />
 
               {/* Filters */}
+              <form onSubmit={addCompany} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 mt-4 md:mt-6 print:hidden">
+                <Input
+                  placeholder="Add a company name..."
+                  value={newCompanyName}
+                  onChange={(event) => setNewCompanyName(event.target.value)}
+                  maxLength={160}
+                  className="h-9 text-sm bg-background"
+                />
+                <Button type="submit" size="sm" disabled={!newCompanyName.trim() || addingCompany} className="h-9 gap-1.5 text-xs shrink-0">
+                  <Plus className="w-3.5 h-3.5" />
+                  {addingCompany ? "Adding..." : "Add Company"}
+                </Button>
+              </form>
               <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2 sm:gap-3 mt-4 md:mt-6 mb-3 md:mb-4 print:hidden">
                 <div className="relative flex-1 sm:min-w-[200px]">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -306,7 +339,7 @@ const Index = () => {
 
           {/* Footer */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-0 text-xs text-muted-foreground mt-4 md:mt-6 pt-3 md:pt-4 border-t border-border">
-            <span>Showing {filtered.length} of {COMPANY_COUNT} companies</span>
+            <span>Showing {filtered.length} of {companies.length} companies</span>
             {pageIndex === 0 && (
               <Button variant="ghost" size="sm" onClick={resetAll} className="text-xs text-muted-foreground hover:text-destructive print:hidden">
                 Reset All Data

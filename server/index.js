@@ -114,6 +114,31 @@ app.post("/api/companies/bootstrap", async (request, response, next) => {
   }
 });
 
+app.post("/api/companies", async (request, response, next) => {
+  const name = typeof request.body?.name === "string" ? request.body.name.trim() : "";
+  if (!name || name.length > 160) {
+    return response.status(400).json({ error: "Enter a company name between 1 and 160 characters." });
+  }
+
+  try {
+    const latest = await companies.find({ ownerId: request.user.uid }).sort({ id: -1 }).limit(1).next();
+    const company = {
+      id: (latest?.id || 0) + 1,
+      name,
+      contacted: false,
+      status: "not_contacted",
+      priority: "medium",
+      lastContactDate: null,
+      notes: "",
+      ownerId: request.user.uid,
+    };
+    await companies.insertOne(company);
+    return response.status(201).json({ company: publicCompany(company) });
+  } catch (error) {
+    return next(error);
+  }
+});
+
 app.patch("/api/companies/:id", async (request, response, next) => {
   const id = Number(request.params.id);
   const updates = request.body;

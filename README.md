@@ -80,6 +80,7 @@ Build the client with `npm run build`; run the API with `npm start`.
 ## Existing features
 
 - Outreach status and priority controls
+- Add custom companies to your personal tracker
 - Search and filters
 - Progress and summary statistics
 - Mark filtered companies as contacted
