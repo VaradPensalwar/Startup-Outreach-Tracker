@@ -1,134 +1,87 @@
-## 🌐 Overview
+# Startup Outreach Tracker
 
-Startup Outreach Tracker is designed to simplify startup outreach by providing a clean interface to manage company records in one place. Users can mark companies as contacted, update outreach status, assign priorities, search companies, and monitor overall outreach progress.
+A React dashboard for tracking startup outreach. Each Google user gets an isolated company list stored in MongoDB, so their work follows them across browsers and devices.
 
-The application automatically saves all changes in the browser using Local Storage, allowing data to persist across sessions without requiring a backend.
+## What changed
 
----
-## 📸 Preview
+- **Google sign-in:** Firebase Authentication (Spark) is used for Google OAuth.
+- **Remote storage:** A Node/Express API verifies Firebase ID tokens and persists data to MongoDB.
+- **Per-user privacy:** Every database query is scoped to the verified Firebase user ID; the browser never receives MongoDB credentials.
+- **Safe migration:** Existing `startup-tracker` Local Storage data is imported once after the user’s first sign-in, then removed. New changes are saved remotely only.
 
-<video src="https://github.com/user-attachments/assets/facba3d1-23cb-427a-9b1d-be56d3d0c7d3" autoplay loop muted playsinline width="100%"></video>
+Firebase’s Spark plan includes social sign-in at no cost, and MongoDB Atlas offers a free M0 cluster suitable for a small development or proof-of-concept deployment. Review each provider’s current quotas before using this in a high-traffic production application.
 
----
+## Architecture
 
-## ✨ Features
-
-- Track outreach status for startups
-- Mark companies as contacted
-- Update company status
-  - Not Contacted
-  - Contacted
-  - Replied
-  - Meeting Scheduled
-- Assign High, Medium, or Low priority
-- Search companies by name
-- Filter companies by status and priority
-- Outreach statistics dashboard
-- Progress bar showing overall outreach completion
-- Export company data as CSV
-- Automatically stores data using Local Storage
-- Responsive interface for desktop and mobile devices
-
----
-
-## 🛠 Tech Stack
-
-| Technology | Purpose |
-|------------|---------|
-| React | User Interface |
-| TypeScript | Type Safety |
-| Vite | Build Tool |
-| Tailwind CSS | Styling |
-| shadcn/ui | UI Components |
-| React Router | Routing |
-| React Query | Application Setup |
-| Local Storage | Data Persistence |
-
----
-
-## 📂 Project Structure
-
-```
-src/
-│
-├── components/
-│   ├── CompanyRow.tsx
-│   ├── StatsBar.tsx
-│   └── ui/
-│
-├── data/
-│   └── companies.ts
-│
-├── pages/
-│   ├── Index.tsx
-│   └── NotFound.tsx
-│
-├── App.tsx
-└── main.tsx
+```text
+React + Firebase Google sign-in
+          | Firebase ID token
+          v
+Express API + Firebase Admin verification
+          | ownerId scoped queries
+          v
+MongoDB Atlas (companies collection)
 ```
 
----
+## Setup
 
-## 🚀 Getting Started
+### 1. Create Firebase authentication
 
-Clone the repository
+1. Create a Firebase project and register a **Web app**.
+2. In **Authentication → Sign-in method**, enable **Google**.
+3. In **Project settings → Service accounts**, generate a new private key for the server.
+4. Add your local and deployed domains in Firebase Authentication’s **Authorized domains** list.
 
-```bash
-git clone https://github.com/your-username/AI-Startup-Tracker.git
-```
+### 2. Create MongoDB Atlas storage
 
-Move into the project directory
+1. Create an Atlas **M0 Free** cluster.
+2. Create a database user and permit the IP address/network where the API will run.
+3. Copy the Node.js connection string from **Connect → Drivers**.
 
-```bash
-cd AI-Startup-Tracker
-```
-
-Install dependencies
+### 3. Configure the project
 
 ```bash
 npm install
+cp .env.example .env
 ```
 
-Start the development server
+Fill all Firebase web values, `MONGODB_URI`, and `FIREBASE_SERVICE_ACCOUNT_JSON` in `.env`. The service-account JSON is server-only: do not prefix it with `VITE_`, add it to a repository, or use it in the browser.
+
+### 4. Run locally
 
 ```bash
 npm run dev
 ```
 
-Open your browser and visit
+This starts the Vite client at `http://localhost:8080` and the API at `http://localhost:3001`. Vite proxies `/api` calls to the API automatically.
 
-```
-http://localhost:5173
-```
+## Deployment
 
----
+Deploy the Vite client and the `server/index.js` API as a single Node-capable service or as two services. When they are separate:
 
-## 📊 Application Highlights
+- Set `VITE_API_URL` to the API’s public origin when building the client.
+- Set `CLIENT_ORIGIN` to the client’s deployed origin (comma-separate multiple allowed origins).
+- Allow the API host’s network/IP in MongoDB Atlas.
+- Add the client domain to Firebase Authentication’s authorized domains.
 
-- Displays startup outreach statistics
-- Calculates outreach progress automatically
-- Records the last contact date when a company is updated
-- Supports CSV export for offline tracking
-- Persists changes even after refreshing the page
+Build the client with `npm run build`; run the API with `npm start`.
 
----
+## Available commands
 
-## 📱 Responsive Design
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Start the client and API together |
+| `npm run dev:client` | Start Vite only |
+| `npm run dev:server` | Start the Express API only |
+| `npm run build` | Create a production client build |
+| `npm run lint` | Lint the project |
+| `npm test` | Run tests |
 
-The application is optimized for:
+## Existing features
 
-- 💻 Desktop
-- 📱 Mobile
-- 📟 Tablet
-
----
-
-## 👨‍💻 Author
-
-**Varad Pensalwar**
-
-GitHub: https://github.com/varadpensalwar
-
----
-
-⭐ If you found this project useful, consider giving it a star.
+- Outreach status and priority controls
+- Search and filters
+- Progress and summary statistics
+- Mark filtered companies as contacted
+- CSV export
+- Responsive and printable pages

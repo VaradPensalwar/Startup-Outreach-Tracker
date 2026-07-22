@@ -1,46 +1,111 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { generateCompanies, Company, COMPANY_COUNT } from "@/data/companies";
+import { companyApi } from "@/lib/api";
+import { useAuth } from "@/components/AuthProvider";
 import CompanyRow from "@/components/CompanyRow";
 import StatsBar from "@/components/StatsBar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, FileText, CheckSquare, Download } from "lucide-react";
+import { Search, FileText, CheckSquare, Download, LogOut } from "lucide-react";
+import { toast } from "sonner";
 
 const Index = () => {
-  const [companies, setCompanies] = useState<Company[]>(() => {
-    const saved = localStorage.getItem("startup-tracker");
-    return saved ? JSON.parse(saved) : generateCompanies();
-  });
+  const { user, loading: authLoading, configured, signIn, signOut } = useAuth();
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [loadingCompanies, setLoadingCompanies] = useState(false);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterPriority, setFilterPriority] = useState<string>("all");
 
-  const save = useCallback((updated: Company[]) => {
-    setCompanies(updated);
-    localStorage.setItem("startup-tracker", JSON.stringify(updated));
+  useEffect(() => {
+    if (!user) {
+      setCompanies([]);
+      setLoadingCompanies(false);
+      return;
+    }
+
+    let cancelled = false;
+    const loadTracker = async () => {
+      setLoadingCompanies(true);
+      try {
+        const remote = await companyApi.list();
+        if (cancelled) return;
+
+        if (remote.companies.length) {
+          setCompanies(remote.companies);
+          return;
+        }
+
+        // Preserve data created by the pre-MongoDB version once, then stop using Local Storage.
+        let legacyCompanies: Company[] | null = null;
+        try {
+          const saved = localStorage.getItem("startup-tracker");
+          const parsed = saved ? JSON.parse(saved) : null;
+          if (Array.isArray(parsed) && parsed.length > 0) legacyCompanies = parsed;
+        } catch {
+          // A malformed legacy value should not prevent a new remote tracker from starting.
+        }
+
+        const initialCompanies = legacyCompanies || generateCompanies();
+        const seeded = await companyApi.bootstrap(initialCompanies);
+        if (cancelled) return;
+        setCompanies(seeded.companies);
+        if (legacyCompanies) localStorage.removeItem("startup-tracker");
+      } catch (error) {
+        if (!cancelled) toast.error(error instanceof Error ? error.message : "Could not load your tracker.");
+      } finally {
+        if (!cancelled) setLoadingCompanies(false);
+      }
+    };
+
+    void loadTracker();
+    return () => { cancelled = true; };
+  }, [user]);
+
+  const today = () => new Date().toLocaleDateString();
+
+  const updateCompany = useCallback(async (id: number, updates: Partial<Company>) => {
+    const result = await companyApi.update(id, updates);
+    setCompanies((current) => current.map((company) => company.id === id ? result.company : company));
   }, []);
 
-  const toggleContacted = useCallback((id: number) => {
-    save(companies.map(c => {
-      if (c.id !== id) return c;
-      const contacted = !c.contacted;
-      return {
-        ...c,
+  const toggleContacted = useCallback(async (id: number) => {
+    const company = companies.find((item) => item.id === id);
+    if (!company) return;
+    const contacted = !company.contacted;
+    try {
+      await updateCompany(id, {
         contacted,
         status: contacted ? "contacted" : "not_contacted",
-        lastContactDate: contacted ? new Date().toLocaleDateString() : null,
-      };
-    }));
-  }, [companies, save]);
+        lastContactDate: contacted ? today() : null,
+      });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not save this change.");
+    }
+  }, [companies, updateCompany]);
 
-  const changeStatus = useCallback((id: number, status: Company["status"]) => {
-    save(companies.map(c => c.id === id ? { ...c, status, contacted: status !== "not_contacted", lastContactDate: status !== "not_contacted" ? (c.lastContactDate || new Date().toLocaleDateString()) : null } : c));
-  }, [companies, save]);
+  const changeStatus = useCallback(async (id: number, status: Company["status"]) => {
+    const company = companies.find((item) => item.id === id);
+    if (!company) return;
+    try {
+      await updateCompany(id, {
+        status,
+        contacted: status !== "not_contacted",
+        lastContactDate: status !== "not_contacted" ? (company.lastContactDate || today()) : null,
+      });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not save this change.");
+    }
+  }, [companies, updateCompany]);
 
-  const changePriority = useCallback((id: number, priority: Company["priority"]) => {
-    save(companies.map(c => c.id === id ? { ...c, priority } : c));
-  }, [companies, save]);
+  const changePriority = useCallback(async (id: number, priority: Company["priority"]) => {
+    try {
+      await updateCompany(id, { priority });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not save this change.");
+    }
+  }, [updateCompany]);
 
   const ITEMS_PER_PAGE = 25;
 
@@ -61,15 +126,28 @@ const Index = () => {
     return result.length > 0 ? result : [[]];
   }, [filtered]);
 
-  const markAllFiltered = () => {
+  const markAllFiltered = async () => {
     const ids = new Set(filtered.filter(c => !c.contacted).map(c => c.id));
     if (ids.size === 0) return;
-    save(companies.map(c => ids.has(c.id) ? { ...c, contacted: true, status: "contacted" as const, lastContactDate: new Date().toLocaleDateString() } : c));
+    const lastContactDate = today();
+    try {
+      await companyApi.markContacted([...ids], lastContactDate);
+      setCompanies((current) => current.map((company) => ids.has(company.id)
+        ? { ...company, contacted: true, status: "contacted" as const, lastContactDate }
+        : company));
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not save the selected companies.");
+    }
   };
 
-  const resetAll = () => {
-    const fresh = generateCompanies();
-    save(fresh);
+  const resetAll = async () => {
+    try {
+      const result = await companyApi.reset(generateCompanies());
+      setCompanies(result.companies);
+      toast.success("Your remote tracker has been reset.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not reset your tracker.");
+    }
   };
 
   const exportCSV = () => {
@@ -84,8 +162,48 @@ const Index = () => {
     URL.revokeObjectURL(url);
   };
 
+  if (authLoading) {
+    return <div className="min-h-screen grid place-items-center bg-muted/80 text-sm text-muted-foreground">Checking your sign-in…</div>;
+  }
+
+  if (!configured) {
+    return (
+      <div className="min-h-screen grid place-items-center bg-muted/80 p-4">
+        <div className="max-w-md rounded-lg border bg-card p-6 text-center shadow-sm">
+          <h1 className="font-display text-xl font-bold">Authentication setup required</h1>
+          <p className="mt-2 text-sm text-muted-foreground">Add the Firebase web app values from <code>.env.example</code>, then restart the app.</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen grid place-items-center bg-muted/80 p-4">
+        <div className="max-w-md rounded-lg border bg-card p-6 text-center shadow-sm">
+          <h1 className="font-display text-2xl font-bold">Startup Outreach Tracker</h1>
+          <p className="mt-2 text-sm text-muted-foreground">Sign in with Google to securely load your personal tracker from MongoDB.</p>
+          <Button className="mt-5" onClick={() => void signIn().catch((error) => toast.error(error.message || "Google sign-in failed."))}>Continue with Google</Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadingCompanies) {
+    return <div className="min-h-screen grid place-items-center bg-muted/80 text-sm text-muted-foreground">Loading your remote tracker…</div>;
+  }
+
   return (
     <div className="min-h-screen bg-muted/80 py-4 md:py-8 px-2 sm:px-4 print:bg-white print:py-0 space-y-4 md:space-y-8 print:space-y-0">
+      <div className="mx-auto flex max-w-[210mm] items-center justify-between px-1 print:hidden">
+        <div className="flex items-center gap-2 min-w-0">
+          {user.photoURL && <img src={user.photoURL} alt="" className="h-7 w-7 rounded-full" referrerPolicy="no-referrer" />}
+          <span className="truncate text-xs text-muted-foreground">{user.email}</span>
+        </div>
+        <Button variant="ghost" size="sm" className="gap-1.5 text-xs" onClick={() => void signOut()}>
+          <LogOut className="h-3.5 w-3.5" /> Sign out
+        </Button>
+      </div>
       {pages.map((pageCompanies, pageIndex) => (
         <div key={pageIndex} className="mx-auto bg-card shadow-[0_2px_20px_rgba(0,0,0,0.08)] border border-border print:shadow-none print:border-0 print:break-after-page max-w-full md:max-w-[210mm] p-4 sm:p-6 md:p-8 lg:p-12 print:p-[20mm_25mm]">
           
