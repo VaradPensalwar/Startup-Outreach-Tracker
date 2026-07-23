@@ -409,11 +409,11 @@ This project is licensed under the **MIT License**.
 
 # 👨‍💻 Author
 
-**Your Name**
+**Varad Pensalwar**
 
-GitHub: https://github.com/yourusername
+GitHub: https://github.com/VaradPensalwar
 
-LinkedIn: https://linkedin.com/in/yourprofile
+LinkedIn: https://linkedin.com/in/VaradPensalwar
 
 ---
 
