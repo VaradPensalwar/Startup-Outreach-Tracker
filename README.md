@@ -6,9 +6,9 @@ Securely manage startup outreach, track application progress, and access your da
 
 ---
 
-## 🌐 Live Demo
-
-🔗 **Live Demo:** https://startup-outreach-tracker.vercel.app
+<p>
+  <a href="https://startup-outreach-tracker.vercel.app/"><strong>🔗 Live Link</strong></a>
+</p>
 
 ---
 
