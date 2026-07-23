@@ -1,7 +1,6 @@
 # 🚀 Startup Outreach Tracker
 
 A full-stack startup outreach CRM built with **React**, **Firebase Authentication**, **Express.js**, and **MongoDB Atlas**.
-
 Securely manage startup outreach, track application progress, and access your data from any device with Google Sign-In.
 
 <p>
