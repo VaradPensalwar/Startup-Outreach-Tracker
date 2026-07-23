@@ -10,18 +10,6 @@ Securely manage startup outreach, track application progress, and access your da
 
 ---
 
-## 📸 Preview
-
-### Dashboard
-
-![Dashboard](./screenshots/dashboard.png)
-
-### Company Management
-
-![Companies](./screenshots/company-list.png)
-
----
-
 ## ✨ Features
 
 - 🔐 Google Authentication (Firebase)
