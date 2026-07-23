@@ -1,87 +1,422 @@
-# Startup Outreach Tracker
+# 🚀 Startup Outreach Tracker
 
-A React dashboard for tracking startup outreach. Each Google user gets an isolated company list stored in MongoDB, so their work follows them across browsers and devices.
+A modern full-stack web application for managing and tracking startup outreach campaigns.
 
-## What changed
+Built with **React**, **TypeScript**, **Firebase Authentication**, **Express.js**, and **MongoDB Atlas**, the application allows every authenticated Google user to securely manage their own startup database across multiple devices.
 
-- **Google sign-in:** Firebase Authentication (Spark) is used for Google OAuth.
-- **Remote storage:** A Node/Express API verifies Firebase ID tokens and persists data to MongoDB.
-- **Per-user privacy:** Every database query is scoped to the verified Firebase user ID; the browser never receives MongoDB credentials.
-- **Safe migration:** Existing `startup-tracker` Local Storage data is imported once after the user’s first sign-in, then removed. New changes are saved remotely only.
+---
 
-Firebase’s Spark plan includes social sign-in at no cost, and MongoDB Atlas offers a free M0 cluster suitable for a small development or proof-of-concept deployment. Review each provider’s current quotas before using this in a high-traffic production application.
+## ✨ Features
 
-## Architecture
+### 🔐 Authentication
+- Google Sign-In using Firebase Authentication
+- Secure Firebase ID Token verification
+- Individual user workspaces
+- Protected backend API
+
+### 📊 Company Management
+- Add, edit, and delete companies
+- Track outreach progress
+- Update outreach status
+- Assign priorities
+- Store notes and contact information
+
+### 🔍 Search & Filtering
+- Search companies instantly
+- Filter by status
+- Filter by priority
+- Combined filtering support
+
+### 📈 Dashboard
+- Total companies
+- Contacted companies
+- Pending companies
+- Progress statistics
+- Summary cards
+
+### ⚡ Productivity
+- Bulk mark filtered companies as contacted
+- CSV export
+- Responsive UI
+- Print-friendly pages
+
+### ☁️ Cloud Storage
+- MongoDB Atlas database
+- Automatic data synchronization
+- Cross-device access
+- User-specific data isolation
+
+---
+
+# 🏗 Tech Stack
+
+## Frontend
+
+- React 18
+- TypeScript
+- Vite
+- React Router
+- React Query
+- Tailwind CSS
+- shadcn/ui
+- Lucide Icons
+
+## Backend
+
+- Node.js
+- Express.js
+- Firebase Admin SDK
+- MongoDB Atlas
+
+## Authentication
+
+- Firebase Authentication
+- Google OAuth
+
+## Database
+
+- MongoDB Atlas (M0 Free Tier)
+
+---
+
+# 🔒 Security
+
+This project follows several security best practices.
+
+- Firebase Authentication handles user login.
+- Express verifies every Firebase ID Token.
+- MongoDB credentials never reach the browser.
+- Every database query is automatically scoped to the authenticated user.
+- Service Account credentials remain server-side only.
+
+---
+
+# 🗄 Architecture
 
 ```text
-React + Firebase Google sign-in
-          | Firebase ID token
-          v
-Express API + Firebase Admin verification
-          | ownerId scoped queries
-          v
-MongoDB Atlas (companies collection)
+                 Google Sign-In
+                        │
+                        ▼
+          Firebase Authentication
+                        │
+                Firebase ID Token
+                        │
+                        ▼
+            Express.js REST API
+                        │
+      Firebase Admin Token Verification
+                        │
+                 ownerId filtering
+                        │
+                        ▼
+               MongoDB Atlas Database
 ```
 
-## Setup
+---
 
-### 1. Create Firebase authentication
+# 🔄 Data Migration
 
-1. Create a Firebase project and register a **Web app**.
-2. In **Authentication → Sign-in method**, enable **Google**.
-3. In **Project settings → Service accounts**, generate a new private key for the server.
-4. Add your local and deployed domains in Firebase Authentication’s **Authorized domains** list.
+For existing users:
 
-### 2. Create MongoDB Atlas storage
+- Local Storage data (`startup-tracker`)
+- Imported automatically after first login
+- Saved into MongoDB
+- Local Storage removed afterward
+- Future updates are stored only in MongoDB
 
-1. Create an Atlas **M0 Free** cluster.
-2. Create a database user and permit the IP address/network where the API will run.
-3. Copy the Node.js connection string from **Connect → Drivers**.
+---
 
-### 3. Configure the project
+# 📁 Project Structure
+
+```
+Startup-Outreach-Tracker
+│
+├── src/
+│   ├── components/
+│   ├── pages/
+│   ├── hooks/
+│   ├── services/
+│   ├── lib/
+│   └── main.tsx
+│
+├── server/
+│   ├── index.js
+│   └── ...
+│
+├── public/
+│
+├── .env.example
+├── package.json
+└── README.md
+```
+
+---
+
+# ⚙️ Installation
+
+## 1. Clone Repository
+
+```bash
+git clone <your-repository-url>
+
+cd Startup-Outreach-Tracker
+```
+
+---
+
+## 2. Install Dependencies
 
 ```bash
 npm install
+```
+
+---
+
+## 3. Configure Environment Variables
+
+Copy the example file.
+
+```bash
 cp .env.example .env
 ```
 
-Fill all Firebase web values, `MONGODB_URI`, and `FIREBASE_SERVICE_ACCOUNT_JSON` in `.env`. The service-account JSON is server-only: do not prefix it with `VITE_`, add it to a repository, or use it in the browser.
+Fill in the required values.
 
-### 4. Run locally
+```env
+# Firebase Web SDK
+VITE_FIREBASE_API_KEY=
+VITE_FIREBASE_AUTH_DOMAIN=
+VITE_FIREBASE_PROJECT_ID=
+VITE_FIREBASE_STORAGE_BUCKET=
+VITE_FIREBASE_MESSAGING_SENDER_ID=
+VITE_FIREBASE_APP_ID=
+
+# Backend
+MONGODB_URI=
+CLIENT_ORIGIN=
+
+# Server Only
+FIREBASE_SERVICE_ACCOUNT_JSON=
+
+# Optional
+VITE_API_URL=
+```
+
+> **Important**
+>
+> Never expose the Firebase Service Account in the frontend.
+> Do **not** prefix it with `VITE_`.
+> Never commit it to Git.
+
+---
+
+# 🔥 Firebase Setup
+
+1. Create a Firebase Project.
+2. Register a Web App.
+3. Enable **Google Authentication**.
+4. Download the Firebase Service Account JSON.
+5. Add your domains to:
+
+```
+Authentication
+    → Settings
+        → Authorized Domains
+```
+
+---
+
+# 🍃 MongoDB Atlas Setup
+
+1. Create a free **M0 Cluster**.
+2. Create a Database User.
+3. Allow your server IP.
+4. Copy the MongoDB Node.js connection string.
+5. Add it to:
+
+```
+MONGODB_URI
+```
+
+---
+
+# ▶️ Running the Project
+
+Start both frontend and backend.
 
 ```bash
 npm run dev
 ```
 
-This starts the Vite client at `http://localhost:8080` and the API at `http://localhost:3001`. Vite proxies `/api` calls to the API automatically.
+Default URLs
 
-## Deployment
+Frontend
 
-Deploy the Vite client and the `server/index.js` API as a single Node-capable service or as two services. When they are separate:
+```
+http://localhost:8080
+```
 
-- Set `VITE_API_URL` to the API’s public origin when building the client.
-- Set `CLIENT_ORIGIN` to the client’s deployed origin (comma-separate multiple allowed origins).
-- Allow the API host’s network/IP in MongoDB Atlas.
-- Add the client domain to Firebase Authentication’s authorized domains.
+Backend
 
-Build the client with `npm run build`; run the API with `npm start`.
+```
+http://localhost:3001
+```
 
-## Available commands
+Vite automatically proxies `/api` requests to the backend.
 
-| Command | Purpose |
-| --- | --- |
-| `npm run dev` | Start the client and API together |
-| `npm run dev:client` | Start Vite only |
-| `npm run dev:server` | Start the Express API only |
-| `npm run build` | Create a production client build |
-| `npm run lint` | Lint the project |
-| `npm test` | Run tests |
+---
 
-## Existing features
+# 📦 Available Scripts
 
-- Outreach status and priority controls
-- Search and filters
-- Progress and summary statistics
-- Mark filtered companies as contacted
-- CSV export
-- Responsive and printable pages
+| Command | Description |
+|----------|-------------|
+| `npm run dev` | Start frontend and backend |
+| `npm run dev:client` | Start Vite frontend |
+| `npm run dev:server` | Start Express server |
+| `npm run build` | Production build |
+| `npm run preview` | Preview production build |
+| `npm run lint` | Run ESLint |
+| `npm test` | Run Vitest |
+| `npm run test:watch` | Watch mode tests |
+
+---
+
+# 🚀 Deployment
+
+The application can be deployed as:
+
+- Single Node application
+- Separate frontend and backend services
+
+When deploying separately:
+
+### Frontend
+
+Set
+
+```
+VITE_API_URL
+```
+
+to your backend URL.
+
+Example
+
+```
+https://api.example.com
+```
+
+### Backend
+
+Configure
+
+```
+CLIENT_ORIGIN
+```
+
+Example
+
+```
+https://startup-tracker.vercel.app
+```
+
+Also:
+
+- Allow backend IP in MongoDB Atlas
+- Add frontend domain to Firebase Authorized Domains
+
+---
+
+# 📊 User Workflow
+
+```text
+Google Login
+      │
+      ▼
+Verify Firebase Token
+      │
+      ▼
+Load User Companies
+      │
+      ▼
+Manage Outreach
+      │
+      ▼
+Save to MongoDB
+```
+
+---
+
+# 🎯 Key Features
+
+✅ Google Authentication
+
+✅ Secure Backend API
+
+✅ MongoDB Cloud Storage
+
+✅ User-specific Database
+
+✅ Startup Management
+
+✅ Status Tracking
+
+✅ Priority Management
+
+✅ Search & Filters
+
+✅ Dashboard Analytics
+
+✅ CSV Export
+
+✅ Responsive Design
+
+✅ Print Support
+
+---
+
+# 🔐 Privacy
+
+Every authenticated user receives an isolated workspace.
+
+Database queries are filtered using the verified Firebase User ID.
+
+Users cannot view or modify another user's companies.
+
+---
+
+# 📌 Future Improvements
+
+- Email reminders
+- Team collaboration
+- Company tags
+- Contact history
+- Activity timeline
+- Dark mode
+- Import from CSV
+- Email integration
+- Calendar integration
+- Analytics charts
+- Notifications
+
+---
+
+# 📄 License
+
+This project is licensed under the **MIT License**.
+
+---
+
+# 👨‍💻 Author
+
+**Your Name**
+
+GitHub: https://github.com/yourusername
+
+LinkedIn: https://linkedin.com/in/yourprofile
+
+---
+
+## ⭐ Support
+
+If you found this project useful, consider giving it a **Star ⭐** on GitHub.
