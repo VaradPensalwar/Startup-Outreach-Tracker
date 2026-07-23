@@ -4,8 +4,6 @@ A full-stack startup outreach CRM built with **React**, **Firebase Authenticatio
 
 Securely manage startup outreach, track application progress, and access your data from any device with Google Sign-In.
 
----
-
 <p>
   <a href="https://startup-outreach-tracker.vercel.app/"><strong>🔗 Live Link</strong></a>
 </p>
